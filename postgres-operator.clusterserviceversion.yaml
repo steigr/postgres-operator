@@ -1,0 +1,133 @@
+# ACTIONS REQUIRED: Replace YOUR_NAMESPACE_HERE with your namespace.
+# ACTIONS REQUIRED: Replace YOUR_REPO_IMAGE_HERE with the name of your built image.
+#
+# This file defines the ClusterServiceVersion (CSV) to tell the catalog how to display, create and
+# manage the application as a whole. If changes are made to the CRD for this application kind,
+# make sure to replace those references below as well.
+apiVersion: app.coreos.com/v1alpha1
+kind: ClusterServiceVersion-v1
+metadata:
+  name: postgres-operator.YOUR_VERSION_HERE
+  namespace: YOUR_NAMESPACE_HERE
+spec:
+  install: 
+    strategy: deployment
+    spec:
+      permissions:
+      - serviceAccountName: postgres-operator
+        rules:
+        - apiGroups:
+          - database.stei.gr
+          resources:
+          - postgreses
+          verbs:
+          - "*"
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - events
+          - secrets
+          - services
+          - configmaps
+          verbs:
+          - "*"
+        - apiGroups:
+          - ""
+          resources:
+          - "namespaces"
+          verbs:
+          - "get"
+        - apiGroups:
+          - apps
+          - extensions
+          resources:
+          - statefulsets
+          verbs:
+          - "*"
+      deployments: 
+      - name: postgres-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: postgres-operator
+          template:
+            metadata:
+              labels:
+                app: postgres-operator
+            spec:
+              containers:
+                - name: sao
+                  image: YOUR_REPO_IMAGE_HERE:YOUR_VERSION_HERE
+                  ports:
+                    - containerPort: 8080
+                      protocol: TCP
+                  imagePullPolicy: Always
+              restartPolicy: Always
+              terminationGracePeriodSeconds: 5
+              serviceAccountName: postgres-operator
+              serviceAccount: postgres-operator
+  customresourcedefinitions:
+    owned:
+      - description: Postgres Database Service
+        displayName: Postgres Database
+        kind: Postgres
+        name: postgreses.database.stei.gr
+        version: v1alpha1
+        resources:
+          - kind: StatefulSet
+            version: v1beta2
+          - kind: Secret
+            version: v1
+          - kind: ConfigMap
+            version: v1
+          - kind: Service
+            version: v1
+          - kind: ReplicaSet
+            version: v1beta2
+          - kind: Pod
+            version: v1
+        specDescriptors:
+          - description: The desired number of member Pods for the deployment.
+            displayName: Size
+            path: size
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:podCount'
+        statusDescriptors:
+          - description: The current status of the application.
+            displayName: Status
+            path: phase
+            x-descriptors:
+              - 'urn:alm:descriptor:io.kubernetes.phase'
+          - description: Explanation for the current status of the application.
+            displayName: Status Details
+            path: reason
+            x-descriptors:
+              - 'urn:alm:descriptor:io.kubernetes.phase:reason'
+  keywords:
+    - postgres
+    - database
+    - rdbms
+    - dbms
+    - db
+  displayName: Postgres RDBMS
+  provider:
+    name: steigr
+    url: stei.gr/operator/postgres
+  icon:
+    - base64data: >-
+        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
+      mediatype: image/png
+  links:
+    - name: PostgreSQL Project Homepage
+      url: https://www.postgresql.org
+  maturity: alpha
+  version: YOUR_SEM_VERSION_HERE
+  maintainers:
+    - email: me@stei.gr
+      name: steigr
+  description: Postgres Database Operator
+  labels:
+    alm-owner-enterprise-app: postgres-operator
+    alm-status-descriptors: postgres-operator.YOUR_VERSION_HERE

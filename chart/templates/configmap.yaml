@@ -1,0 +1,15 @@
+{{- $app := printf "%s-postgres" .Values.resource.name -}}
+{{- $spec := dict }}
+{{- $_ := merge $spec .Values.resource.spec .Values.default -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ $app }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  initdb: |
+{{ $spec.config.initdb | indent 4 }}

@@ -1,1 +1,1 @@
-FROM quay.io/steigr/lostromos:v0.1.0 AS sao
+FROM quay.io/steigr/lostromos:v0.1.1 AS sao

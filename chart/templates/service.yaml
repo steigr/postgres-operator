@@ -1,0 +1,23 @@
+{{- $app := printf "%s-postgres" .Values.resource.name -}}
+{{- $spec := dict }}
+{{- $_ := merge $spec .Values.resource.spec .Values.default -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ .Values.resource.name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: {{ .Values.resource.name }}
+    resource: {{ $app }}
+  ports:
+    - name: {{ $spec.service.name }}
+      protocol: TCP
+      port: {{ $spec.service.port }}
+      targetPort: postgres
+  clusterIP: None
+  type: ClusterIP

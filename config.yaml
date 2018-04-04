@@ -7,8 +7,8 @@
 # If the CustomResourceDefinition (CRD) for this application is modified, please make sure to
 # adjust the reference in the `crd` block below.
 crd:
-  group: example.com
-  name: example-apps
+  group: database.stei.gr
+  name: postgreses
   version: v1alpha1
   namespace: YOUR_NAMESPACE_HERE
 helm:

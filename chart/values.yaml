@@ -1,1 +1,30 @@
-image: nginx
+default:
+  storage:
+    size: 1Gi
+  image:
+    name: docker.io/library/postgres
+    tag: 10.3-alpine
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      memory: 1024Mi
+      cpu: 2000m
+    requests:
+      memory: 64Mi
+      cpu: 10m
+  service:
+    port: 5432
+    name: postgres
+  secret:
+    format: "postgres://%u:%p@%h:%P/%d"
+  config:
+    initdb: |-
+      #!/bin/bash
+      
+      set -e
+      
+      psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL 
+        CREATE USER "$SOA_USERNAME" WITH LOGIN ${SOA_PASSWORD:+PASSWORD '$SOA_PASSWORD'};
+        CREATE DATABASE "$SOA_DATABASE";
+        GRANT ALL PRIVILEGES ON DATABASE "$SOA_DATABASE" TO "$SOA_USERNAME";
+      EOSQL
